@@ -254,6 +254,12 @@ class Generator(nn.Module):
 # Discriminator architecture, same paradigm as G's above
 def D_arch(ch=64, attention='64',ksize='333333', dilation='111111'):
   arch = {}
+  arch[512] = {'in_channels' :  [3] + [ch*item for item in [1, 1, 2, 4, 8, 8, 16]],
+               'out_channels' : [item * ch for item in [1, 1, 2, 4, 8, 8, 16, 16]],
+               'downsample' : [True] * 7 + [False],
+               'resolution' : [256, 128, 64, 32, 16, 8, 4, 4 ],
+               'attention' : {2**i: 2**i in [int(item) for item in attention.split('_')]
+                              for i in range(2,9)}}
   arch[256] = {'in_channels' :  [3] + [ch*item for item in [1, 2, 4, 8, 8, 16]],
                'out_channels' : [item * ch for item in [1, 2, 4, 8, 8, 16, 16]],
                'downsample' : [True] * 6 + [False],
@@ -313,7 +319,7 @@ class Discriminator(nn.Module):
     self.fp16 = D_fp16
     # Architecture
     self.arch = D_arch(self.ch, self.attention)[resolution]
-
+    
     # Which convs, batchnorms, and linear layers to use
     # No option to turn off SN in D right now
     if self.D_param == 'SN':
@@ -340,6 +346,7 @@ class Discriminator(nn.Module):
                        preactivation=(index > 0),
                        downsample=(nn.AvgPool2d(2) if self.arch['downsample'][index] else None))]]
       # If attention on this block, attach it to the end
+      
       if self.arch['attention'][self.arch['resolution'][index]]:
         print('Adding attention layer in D at resolution %d' % self.arch['resolution'][index])
         self.blocks[-1] += [layers.Attention(self.arch['out_channels'][index],

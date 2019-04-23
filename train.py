@@ -195,15 +195,23 @@ def run(config):
                            + ['%s : %+4.3f' % (key, metrics[key])
                            for key in metrics]), end=' ')
 
-      # Save weights and copies as configured at specified interval
+      # Save weights as configured at specified interval
       if not (state_dict['itr'] % config['save_every']):
         if config['G_eval_mode']:
           print('Switchin G to eval mode...')
           G.eval()
           if config['ema']:
             G_ema.eval()
-        train_fns.save_and_sample(G, D, G_ema, z_, y_, fixed_z, fixed_y, 
-                                  state_dict, config, experiment_name)
+        train_fns.save(G, D, G_ema, state_dict, config, experiment_name)
+        
+      # Sample images as configured at specified interval
+      if not (state_dict['itr'] % config['sample_every']):
+        if config['G_eval_mode']:
+          print('Switchin G to eval mode...')
+          G.eval()
+          if config['ema']:
+            G_ema.eval()
+        train_fns.sample(G, G_ema, z_, y_, fixed_z, fixed_y, state_dict, config, experiment_name)
 
       # Test every specified interval
       if not (state_dict['itr'] % config['test_every']):
