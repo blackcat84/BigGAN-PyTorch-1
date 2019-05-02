@@ -39,7 +39,9 @@ def run(config):
   # and size of the images from the dataset, passing in a pytorch object
   # for the activation specified as a string)
   config['resolution'] = utils.imsize_dict[config['dataset']]
-  config['n_classes'] = utils.nclass_dict[config['dataset']]
+  config['n_classes'] = len(os.listdir(config['base_root']+'/'+config['data_root']))
+  print('Number of classes', config['n_classes'])
+  utils.classes_per_sheet_dict[config['dataset']] = config['n_classes']
   config['G_activation'] = utils.activation_dict[config['G_nl']]
   config['D_activation'] = utils.activation_dict[config['D_nl']]
   # By default, skip init if resuming training.
@@ -88,8 +90,8 @@ def run(config):
     D = D.half()
     # Consider automatically reducing SN_eps?
   GD = model.G_D(G, D)
-  print(G)
-  print(D)
+  #print(G)
+  #print(D)
   print('Number of params in G: {} D: {}'.format(
     *[sum([p.data.nelement() for p in net.parameters()]) for net in [G,D]]))
   # Prepare state dict, which holds things like epoch # and itr #

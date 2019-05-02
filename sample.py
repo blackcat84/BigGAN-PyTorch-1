@@ -40,7 +40,9 @@ def run(config):
   
   # update config (see train.py for explanation)
   config['resolution'] = utils.imsize_dict[config['dataset']]
-  config['n_classes'] = utils.nclass_dict[config['dataset']]
+  config['n_classes'] = len(os.listdir(config['base_root']+'/'+config['data_root']))
+  print('Number of classes', config['n_classes'])
+  utils.classes_per_sheet_dict[config['dataset']] = config['n_classes']
   config['G_activation'] = utils.activation_dict[config['G_nl']]
   config['D_activation'] = utils.activation_dict[config['D_nl']]
   config = utils.update_config_roots(config)
